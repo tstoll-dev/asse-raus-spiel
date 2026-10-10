@@ -233,7 +233,9 @@ function renderTable() {
   const newSlot = document.createElement('div');
   newSlot.className = 'slot build';
   const newPile = emptyEl('Ass raus!');
-  if (selCard && (selCard.rank === 1 || isWild(selCard))) makeTarget(newPile, () => doMove({ type: 'newBuild' }));
+  if (selCard && (selCard.rank === 1 || isWild(selCard))) {
+    makeTarget(newPile, () => (isWild(selCard) ? newBuildWithJoker() : doMove({ type: 'newBuild' })));
+  }
   const newCaption = document.createElement('span');
   newCaption.className = 'need';
   newCaption.textContent = 'neuer Stapel';
@@ -454,6 +456,22 @@ function doMove(to) {
   selected = null;
 }
 
+// Joker eröffnet einen Stapel: erst die Farbe ansagen lassen, dann den Zug schicken.
+function newBuildWithJoker() {
+  const from = selected;
+  const picker = $('#suit-picker');
+  const close = (suit) => {
+    picker.hidden = true;
+    selected = null;
+    if (suit) send({ type: 'move', from, to: { type: 'newBuild', suit } });
+    else renderTable();
+  };
+  for (const btn of picker.querySelectorAll('[data-suit]')) btn.onclick = () => close(btn.dataset.suit);
+  $('#suit-cancel').onclick = () => close(null);
+  picker.onclick = (e) => e.target === picker && close(null);
+  picker.hidden = false;
+}
+
 function doPick(to) {
   if (selected?.type !== 'packet') return;
   send({ type: 'pick', packet: selected.index, to });
@@ -507,7 +525,7 @@ function toast(text) {
 
 // Klick ins Leere hebt die Auswahl auf.
 document.addEventListener('click', (e) => {
-  if (selected && !drag.suppressClick && !e.target.closest('.target, .pickable')) {
+  if (selected && !drag.suppressClick && $('#suit-picker').hidden && !e.target.closest('.target, .pickable')) {
     selected = null;
     if (state && state.phase !== 'lobby') renderTable();
   }

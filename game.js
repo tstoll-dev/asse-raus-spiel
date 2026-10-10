@@ -9,13 +9,14 @@
 //   finished → wer den Hauptstapel leer hat, gewinnt.
 
 const SUITS = ['S', 'H', 'D', 'C']; // Pik, Herz, Karo, Kreuz
+const SUIT_NAMES = { S: 'Pik', H: 'Herz', D: 'Karo', C: 'Kreuz' };
 const HAND_SIZE = 5;
 const PACKET_SIZE = 5;
 const PACKETS_PER_PLAYER = 3;
 const STOCK_PACKETS = 2;
 const TOP_RANK = 12; // Spielstapel gehen vom Ass bis zur Dame
 const MAX_PLAYERS = 4;
-const VERSION = 2; // Format der gespeicherten Tische
+const VERSION = 3; // Format der gespeicherten Tische
 
 // Zwei Rommé-Blätter: je 52 Karten + 3 Joker = 110 Karten.
 // rank: 1 = Ass … 11 = Bube, 12 = Dame, 13 = König, 0 = Joker
@@ -48,10 +49,11 @@ class Game {
     this.packets = []; // verdeckte Päckchen beim Wählen, genommene sind null
     this.pickTurn = 0;
     this.picksDone = 0;
-    this.builds = []; // Spielstapel, jeder beginnt mit einem Ass (oder Joker)
+    this.builds = []; // Spielstapel { cards, suit }: Farbe vom Ass oder beim Joker angesagt
     this.draw = [];
     this.discard = []; // gemeinsamer Ablagestapel
     this.turn = 0;
+    this.startSeat = 0; // wer in dieser Runde beginnt
     this.winner = null;
     this.log = [];
     this.updatedAt = Date.now();
@@ -97,6 +99,8 @@ class Game {
     if (this.phase === 'picking' || this.phase === 'playing') throw new Error('Das Spiel läuft bereits.');
     if (this.players.length < 2) throw new Error('Es braucht mindestens 2 Spieler.');
     if (typeof options.wildKings === 'boolean') this.config.wildKings = options.wildKings;
+    // Erste Runde: der Eröffner des Tisches (erster Platz). Danach beginnt jeweils der Nächste.
+    this.startSeat = this.phase === 'finished' ? (this.startSeat + 1) % this.players.length : 0;
 
     this.draw = shuffle(createDeck());
     this.packets = Array.from({ length: this.players.length * PACKETS_PER_PLAYER }, () =>
@@ -111,12 +115,12 @@ class Game {
       p.hand = [];
       p.stockPackets = 0;
     }
-    // Der Eröffner des Tisches (erster Platz) beginnt, danach in der Reihenfolge der Anmeldung.
-    this.pickTurn = 0;
+    // Gewählt und gespielt wird in der Reihenfolge der Anmeldung, ab dem Startspieler.
+    this.pickTurn = this.startSeat;
     this.picksDone = 0;
     this.phase = 'picking';
     this.addLog(`Neues Spiel: ${this.packets.length} Päckchen liegen bereit. Könige ${this.config.wildKings ? 'sind' : 'sind keine'} Joker.`);
-    this.addLog(`${this.players[0].name} wählt zuerst.`);
+    this.addLog(`${this.players[this.startSeat].name} beginnt.`);
   }
 
   // Ein Päckchen nehmen – blind auf die Hand oder auf den Hauptstapel.
@@ -143,7 +147,7 @@ class Game {
 
     if (this.picksDone === this.packets.length) {
       this.phase = 'playing';
-      this.turn = 0;
+      this.turn = this.startSeat;
       this.addLog('Alle Päckchen sind verteilt – los geht’s!');
       this.beginTurn();
     }
@@ -157,10 +161,10 @@ class Game {
 
   // Am Ende eines Zugs: fertige Spielstapel (Ass bis Dame) kommen auf den Ablagestapel.
   endTurn() {
-    const done = this.builds.filter((pile) => pile.length === TOP_RANK);
+    const done = this.builds.filter((pile) => pile.cards.length === TOP_RANK);
     if (done.length) {
-      for (const pile of done) this.discard.push(...pile);
-      this.builds = this.builds.filter((pile) => pile.length < TOP_RANK);
+      for (const pile of done) this.discard.push(...pile.cards);
+      this.builds = this.builds.filter((pile) => pile.cards.length < TOP_RANK);
       this.addLog(`${done.length === 1 ? 'Ein fertiger Spielstapel kommt' : `${done.length} fertige Spielstapel kommen`} auf den Ablagestapel.`);
     }
     this.turn = (this.turn + 1) % this.players.length;
@@ -197,31 +201,23 @@ class Game {
     return p;
   }
 
-  // Farbe eines Spielstapels: die der ersten echten (nicht Joker-)Karte.
-  pileSuit(pile) {
-    const card = pile.find((c) => !this.isWild(c));
-    return card ? card.suit : null;
-  }
-
   // Warum eine Karte nicht auf den Stapel passt, oder null, wenn sie passt.
   buildError(pile, card) {
-    if (pile.length >= TOP_RANK) return 'Dieser Stapel ist fertig.';
+    if (pile.cards.length >= TOP_RANK) return 'Dieser Stapel ist fertig.';
     if (this.isWild(card)) return null;
-    const needed = pile.length + 1;
+    const needed = pile.cards.length + 1;
     if (card.rank !== needed) return `Auf diesen Stapel gehört ${rankName(needed)}.`;
-    const suit = this.pileSuit(pile);
-    if (suit && card.suit !== suit) return 'Die Farbe muss stimmen.';
+    if (card.suit !== pile.suit) return 'Die Farbe muss stimmen.';
     return null;
   }
 
   // Jeder Joker in einem Spielstapel darf gegen die Karte getauscht werden, die er vertritt
   // (Wert = Position im Stapel, Farbe = Farbe des Stapels). Der Joker kommt auf die Hand.
   swapError(pile, index, card) {
-    if (!pile[index] || !this.isWild(pile[index])) return 'Hier liegt kein Joker.';
+    if (!pile.cards[index] || !this.isWild(pile.cards[index])) return 'Hier liegt kein Joker.';
     if (this.isWild(card)) return 'Ein Joker lässt sich nicht gegen einen Joker tauschen.';
     if (card.rank !== index + 1) return `Diesen Joker ersetzt nur ${rankName(index + 1)}.`;
-    const suit = this.pileSuit(pile);
-    if (suit && card.suit !== suit) return 'Die Farbe muss stimmen.';
+    if (card.suit !== pile.suit) return 'Die Farbe muss stimmen.';
     return null;
   }
 
@@ -234,7 +230,8 @@ class Game {
   }
 
   // from: { type: 'hand', index } | { type: 'stock' }
-  // to:   { type: 'build', pile } | { type: 'newBuild' } | { type: 'swap', pile, index } | { type: 'discard' }
+  // to:   { type: 'build', pile } | { type: 'newBuild', suit? } | { type: 'swap', pile, index } | { type: 'discard' }
+  //       suit ('S' | 'H' | 'D' | 'C') muss angesagt werden, wenn ein Joker einen Stapel eröffnet.
   move(clientId, from, to) {
     const p = this.requireTurn(clientId);
     const card = this.peekSource(p, from);
@@ -247,8 +244,8 @@ class Game {
       const err = this.swapError(pile, index, card);
       if (err) throw new Error(err);
       this.takeSource(p, from);
-      const joker = pile[index];
-      pile[index] = card;
+      const joker = pile.cards[index];
+      pile.cards[index] = card;
       p.hand.push(joker);
       this.addLog(`${p.name} tauscht einen Joker gegen ${rankName(card.rank)} und nimmt ihn auf die Hand.`);
       this.checkWin(p, from);
@@ -258,8 +255,17 @@ class Game {
     if (to.type === 'build' || to.type === 'newBuild') {
       let pile;
       if (to.type === 'newBuild') {
-        if (card.rank !== 1 && !this.isWild(card)) throw new Error('Ein neuer Spielstapel beginnt mit einem Ass.');
-        pile = [];
+        let suit;
+        if (this.isWild(card)) {
+          if (!SUITS.includes(to.suit)) throw new Error('Bitte die Farbe für den Joker ansagen.');
+          suit = to.suit;
+          this.addLog(`${p.name} eröffnet einen Stapel mit Joker und sagt ${SUIT_NAMES[suit]} an.`);
+        } else if (card.rank === 1) {
+          suit = card.suit;
+        } else {
+          throw new Error('Ein neuer Spielstapel beginnt mit einem Ass.');
+        }
+        pile = { cards: [], suit };
         this.builds.push(pile);
       } else {
         pile = this.builds[to.pile];
@@ -268,7 +274,7 @@ class Game {
         if (err) throw new Error(err);
       }
       this.takeSource(p, from);
-      pile.push(card);
+      pile.cards.push(card);
       if (this.checkWin(p, from)) return;
       // Alle Handkarten ausgespielt: sofort 5 nachziehen und weiterspielen.
       if (p.hand.length === 0) {
@@ -324,7 +330,7 @@ class Game {
       discardCount: this.discard.length,
       discardTop: this.discard[this.discard.length - 1] || null,
       packets: this.packets.map((pk) => (pk ? pk.length : 0)),
-      builds: this.builds.map((pile) => ({ cards: pile, suit: this.pileSuit(pile) })),
+      builds: this.builds,
       players: this.players.map((p, seat) => {
         const me = p.clientId === clientId;
         return {
@@ -343,8 +349,8 @@ class Game {
   }
 
   toJSON() {
-    const { version, players, phase, config, packets, pickTurn, picksDone, builds, draw, discard, turn, winner, log, updatedAt } = this;
-    return { version, players, phase, config, packets, pickTurn, picksDone, builds, draw, discard, turn, winner, log, updatedAt };
+    const { version, players, phase, config, packets, pickTurn, picksDone, builds, draw, discard, turn, startSeat, winner, log, updatedAt } = this;
+    return { version, players, phase, config, packets, pickTurn, picksDone, builds, draw, discard, turn, startSeat, winner, log, updatedAt };
   }
 
   static fromJSON(data) {

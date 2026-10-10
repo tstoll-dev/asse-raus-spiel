@@ -188,33 +188,14 @@ body.dragging, body.dragging * { cursor: grabbing !important; user-select: none;
 
 /* ---------- Tisch ---------- */
 
-#screen-table { display: grid; gap: 14px; padding-bottom: 32px; }
+#screen-table { display: grid; gap: 14px; padding-bottom: 32px; max-width: 1120px; }
 
-#opponents { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-.opponent {
-  --cw: clamp(30px, 6vw, 46px);
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 12px;
-  padding: 8px 10px 12px;
-  display: grid;
-  gap: 8px;
-  min-width: 0;
-  border: 2px solid transparent;
-}
-.opponent.active, #me.active { border-color: var(--accent); box-shadow: 0 0 18px rgba(242, 193, 78, 0.35); }
-.opponent.offline { opacity: 0.55; }
-.opponent header { display: flex; justify-content: space-between; gap: 8px; font-weight: 600; font-size: 0.9rem; }
-.opponent header .hand-count { color: var(--muted); font-weight: 400; }
-.opponent .piles { display: flex; gap: 6px; align-items: flex-start; }
-
-#center {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  gap: clamp(8px, 3vw, 28px);
+/* Oben: Päckchen bzw. Spielstapel */
+#board {
   padding: 14px;
   background: rgba(0, 0, 0, 0.12);
   border-radius: 14px;
+  min-height: calc(var(--ch) + 46px);
 }
 #packets, #build-piles {
   display: flex;
@@ -235,24 +216,78 @@ body.dragging, body.dragging * { cursor: grabbing !important; user-select: none;
 #status { text-align: center; font-weight: 600; min-height: 1.4em; }
 #status.mine { color: var(--accent); }
 
-#me {
+/* Unten: Nachziehen/Ablage | eigener Bereich | Mitspieler */
+#bottom {
+  --cw: clamp(42px, 6.6vw, 74px);
   display: flex;
-  justify-content: center;
   align-items: flex-start;
-  gap: clamp(12px, 4vw, 36px);
-  padding: 12px;
+  justify-content: center;
+  gap: 14px;
+}
+#center, #me, .opponent {
   border-radius: 14px;
   border: 2px solid transparent;
 }
-
+#center {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.12);
+}
+#me {
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(12px, 2.4vw, 24px);
+  padding: 12px;
+}
 #my-hand {
   display: flex;
   justify-content: center;
-  gap: clamp(4px, 1.2vw, 10px);
+  gap: clamp(4px, 0.8vw, 8px);
   min-height: var(--ch);
   min-width: var(--cw);
   border-radius: var(--radius);
 }
+
+#opponents { display: flex; flex-direction: column; gap: 8px; }
+.opponent {
+  --cw: 40px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 6px 10px 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.opponent.active, #me.active { border-color: var(--accent); box-shadow: 0 0 18px rgba(242, 193, 78, 0.35); }
+.opponent.offline { opacity: 0.55; }
+.opponent header { display: grid; gap: 2px; font-weight: 600; font-size: 0.85rem; min-width: 64px; }
+.opponent header .hand-count { color: var(--muted); font-weight: 400; }
+.opponent .card .corner { font-size: 9px; left: 3px; top: 2px; }
+.opponent .card .corner.bottom { display: none; }
+.opponent .card .badge { min-width: 18px; height: 18px; font-size: 10px; line-height: 18px; bottom: -6px; right: -6px; }
+
+/* Farbe ansagen */
+#suit-picker {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.45);
+  padding: 16px;
+}
+#suit-picker .panel { margin: 0; text-align: center; background: var(--felt-dark); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5); }
+#suit-picker p { margin: 0; font-weight: 600; }
+#suit-picker .suits { display: flex; gap: 10px; justify-content: center; }
+#suit-picker .suits button {
+  font-size: 2rem;
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  background: var(--card-bg);
+  color: var(--black);
+}
+#suit-picker .suits button.red { color: var(--red); }
 
 #log-box { color: var(--muted); font-size: 0.85rem; }
 #log-box summary { cursor: pointer; }
@@ -295,18 +330,23 @@ body.dragging, body.dragging * { cursor: grabbing !important; user-select: none;
 }
 .winner-banner strong { font-size: 1.4rem; color: var(--accent); }
 
+/* Mittlere Breite: Mitspieler unter den Tisch statt rechts daneben */
+@media (max-width: 900px) {
+  #bottom { flex-wrap: wrap; }
+  #opponents { flex-direction: row; flex-wrap: wrap; justify-content: center; flex-basis: 100%; }
+}
+
 @media (max-width: 560px) {
   .screen { padding: 10px; }
   #screen-table { gap: 8px; }
-  /* Mitte und eigener Bereich bleiben einreihig, Karten werden schmaler */
-  #center { gap: 16px; padding: 8px; }
+  #board { padding: 8px; }
   #packets, #build-piles { gap: 6px; }
-  /* Hauptstapel über der Hand, damit 5 Handkarten in eine Zeile passen */
-  #me { flex-direction: column; align-items: center; gap: 8px; padding: 8px; --cw: calc((100vw - 64px) / 5.4); }
   .caption, .build .need { font-size: 0.65rem; }
-  /* Mitspieler zu zweit nebeneinander, mit enger gefächerten Ablagen */
-  .opponent { --cw: 40px; flex: 1 1 28%; padding: 6px; }
-  .opponent .card .corner { font-size: 8px; left: 2px; top: 1px; }
-  .opponent .card .corner.bottom { display: none; }
-  .opponent .card .badge { min-width: 16px; height: 16px; font-size: 10px; line-height: 16px; bottom: -6px; right: -6px; }
+  /* Mitspieler oben in einer Reihe, darunter Nachziehen/Ablage, dann der eigene Bereich */
+  #bottom { --cw: calc((100vw - 64px) / 5.4); gap: 8px; }
+  #opponents { order: -1; }
+  .opponent { --cw: 30px; flex: 1 1 28%; padding: 4px 6px; gap: 6px; }
+  .opponent header { min-width: 0; font-size: 0.75rem; }
+  #center { --cw: 46px; padding: 6px 10px; }
+  #me { flex-direction: column; align-items: center; gap: 8px; padding: 8px; flex-basis: 100%; }
 }

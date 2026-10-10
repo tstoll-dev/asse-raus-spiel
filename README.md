@@ -50,12 +50,13 @@ Mögliche Ziele leuchten grün.
 - Pro Spieler liegen 3 verdeckte Päckchen à 5 Karten in der Mitte, der Rest ist der Nachziehstapel.
 - Reihum nimmt jeder ein Päckchen, bis alle 3 haben. Dabei entscheidet man blind: 1 Päckchen kommt auf die Hand,
   2 Päckchen bilden den Hauptstapel (10 Karten, oberste Karte offen).
-- Reihenfolge, auch beim Spielen: Wer den Tisch eröffnet hat, beginnt, danach in der Reihenfolge der Anmeldung.
+- Reihenfolge, auch beim Spielen: in der Reihenfolge der Anmeldung. In der ersten Runde beginnt, wer den Tisch
+  eröffnet hat, in jeder weiteren Runde der jeweils nächste Spieler.
 
 **Spielstapel**
 - Jedes Ass eröffnet einen neuen Spielstapel („Ass raus“). Es gibt so viele Stapel, wie Asse ausgespielt werden.
 - Aufgebaut wird vom Ass bis zur Dame in derselben Farbe.
-- Joker ersetzen jede Karte, auch das Ass. Wahlweise sind auch Könige Joker (Schalter in der Lobby, standardmässig aus).
+- Joker ersetzen jede Karte, auch das Ass. Eröffnet ein Joker einen Stapel, sagt der Spieler die Farbe an. Wahlweise sind auch Könige Joker (Schalter in der Lobby, standardmässig aus).
 - Jeder Joker in einem Spielstapel darf vom Spieler am Zug gegen die Karte getauscht werden, die er vertritt
   (passender Wert und Farbe des Stapels). Dazu die Karte auf den Joker ziehen. Der Joker kommt auf die Hand.
 - Die Spielstapel liegen aufgefächert wie bei Solitär, damit man jeden Joker sieht.
