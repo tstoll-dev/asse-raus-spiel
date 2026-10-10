@@ -52,18 +52,9 @@
 
     <div id="status"></div>
 
-    <!-- unten: links Nachziehen/Ablage, Mitte eigener Bereich, rechts die Mitspieler -->
+    <!-- unten: links die Mitspieler, Mitte eigener Bereich, rechts Nachziehen/Ablage -->
     <div id="bottom">
-      <div id="center">
-        <div class="slot">
-          <div id="draw-pile"></div>
-          <span class="caption">Nachziehen <b id="draw-count"></b></span>
-        </div>
-        <div class="slot">
-          <div id="discard-pile"></div>
-          <span class="caption">Ablage <b id="discard-count"></b></span>
-        </div>
-      </div>
+      <div id="opponents"></div>
 
       <div id="me">
         <div class="slot">
@@ -76,7 +67,16 @@
         </div>
       </div>
 
-      <div id="opponents"></div>
+      <div id="center">
+        <div class="slot">
+          <div id="draw-pile"></div>
+          <span class="caption">Nachziehen <b id="draw-count"></b></span>
+        </div>
+        <div class="slot">
+          <div id="discard-pile"></div>
+          <span class="caption">Ablage <b id="discard-count"></b></span>
+        </div>
+      </div>
     </div>
 
     <details id="log-box">

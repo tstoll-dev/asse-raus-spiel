@@ -216,7 +216,7 @@ body.dragging, body.dragging * { cursor: grabbing !important; user-select: none;
 #status { text-align: center; font-weight: 600; min-height: 1.4em; }
 #status.mine { color: var(--accent); }
 
-/* Unten: Nachziehen/Ablage | eigener Bereich | Mitspieler */
+/* Unten: Mitspieler | eigener Bereich | Nachziehen/Ablage */
 #bottom {
   --cw: clamp(42px, 6.6vw, 74px);
   display: flex;
@@ -330,7 +330,7 @@ body.dragging, body.dragging * { cursor: grabbing !important; user-select: none;
 }
 .winner-banner strong { font-size: 1.4rem; color: var(--accent); }
 
-/* Mittlere Breite: Mitspieler unter den Tisch statt rechts daneben */
+/* Mittlere Breite: Mitspieler in einer Reihe über dem Tisch statt links daneben */
 @media (max-width: 900px) {
   #bottom { flex-wrap: wrap; }
   #opponents { flex-direction: row; flex-wrap: wrap; justify-content: center; flex-basis: 100%; }
@@ -348,5 +348,5 @@ body.dragging, body.dragging * { cursor: grabbing !important; user-select: none;
   .opponent { --cw: 30px; flex: 1 1 28%; padding: 4px 6px; gap: 6px; }
   .opponent header { min-width: 0; font-size: 0.75rem; }
   #center { --cw: 46px; padding: 6px 10px; }
-  #me { flex-direction: column; align-items: center; gap: 8px; padding: 8px; flex-basis: 100%; }
+  #me { order: 1; flex-direction: column; align-items: center; gap: 8px; padding: 8px; flex-basis: 100%; }
 }
