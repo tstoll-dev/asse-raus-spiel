@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Ass raus</title>
+  <link rel="icon" href="icon.svg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Tisch wählen -->
+  <section id="screen-join" class="screen">
+    <div class="panel">
+      <h1>Ass raus</h1>
+      <p class="sub">Mit zwei Rommé-Blättern, für 2–4 Spieler.</p>
+      <label>Dein Name
+        <input id="join-name" maxlength="20" autocomplete="nickname" placeholder="z. B. Tom">
+      </label>
+      <label>Tisch
+        <div class="row">
+          <input id="join-room" maxlength="24" placeholder="Tischname">
+          <button id="btn-new-room" type="button" class="secondary" title="Zufälligen Tischnamen erzeugen">🎲</button>
+        </div>
+      </label>
+      <button id="btn-join" type="button">An den Tisch setzen</button>
+    </div>
+  </section>
+
+  <!-- Warten auf Mitspieler -->
+  <section id="screen-lobby" class="screen" hidden>
+    <div class="panel">
+      <h1>Tisch <span id="lobby-room"></span></h1>
+      <p class="sub">Link teilen, damit andere dazukommen:</p>
+      <div class="row">
+        <input id="lobby-link" readonly>
+        <button id="btn-copy" type="button" class="secondary">Kopieren</button>
+      </div>
+      <ul id="lobby-players"></ul>
+      <label class="check"><input id="opt-kings" type="checkbox"> Könige sind Joker</label>
+      <button id="btn-start" type="button">Karten verteilen</button>
+      <button id="btn-leave" type="button" class="link">Tisch verlassen</button>
+    </div>
+  </section>
+
+  <!-- Spieltisch -->
+  <section id="screen-table" class="screen" hidden>
+    <div id="opponents"></div>
+
+    <div id="center">
+      <div class="slot">
+        <div id="draw-pile"></div>
+        <span class="caption">Nachziehen <b id="draw-count"></b></span>
+      </div>
+      <div class="slot">
+        <div id="discard-pile"></div>
+        <span class="caption">Ablage <b id="discard-count"></b></span>
+      </div>
+    </div>
+
+    <div id="packets" hidden></div>
+    <div id="build-piles"></div>
+
+    <div id="status"></div>
+
+    <div id="me">
+      <div class="slot">
+        <div id="my-stock"></div>
+        <span class="caption">Hauptstapel <b id="my-stock-count"></b></span>
+      </div>
+      <div class="slot hand-slot">
+        <div id="my-hand"></div>
+        <span class="caption">Hand</span>
+      </div>
+    </div>
+
+    <details id="log-box">
+      <summary>Verlauf</summary>
+      <ol id="log"></ol>
+    </details>
+  </section>
+
+  <div id="toast" hidden></div>
+  <div id="conn" hidden>Verbindung getrennt – verbinde neu …</div>
+
+  <script src="app.js"></script>
+</body>
+</html>

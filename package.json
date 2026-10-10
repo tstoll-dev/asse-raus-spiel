@@ -1,0 +1,13 @@
+{
+  "name": "assraus",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Ass raus – Skip-Bo-Variante mit Rommé-Karten, verteilt im Browser spielbar",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

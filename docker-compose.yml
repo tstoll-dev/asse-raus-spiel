@@ -1,0 +1,11 @@
+services:
+  assraus:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${ASSRAUS_PORT:-3100}:3000"   # nur lokal, nginx macht den Rest
+    volumes:
+      - assraus-data:/data
+
+volumes:
+  assraus-data:
